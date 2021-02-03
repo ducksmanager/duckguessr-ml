@@ -24,7 +24,7 @@ FROM (
       AND oldestdate > '2010-00-00'
       AND sitecode = 'thumbnails3'
       AND kind = 'n'
-      AND storyjob.plotwritartink = 'a'
+      AND plotwritartink = 'a'
       AND personcode <> '?'
     GROUP BY personcode
     HAVING COUNT(entryurl.id) > 20

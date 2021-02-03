@@ -12,7 +12,7 @@ WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG')
   AND oldestdate > '2010-00-00'
   AND sitecode = 'thumbnails3'
   AND kind = 'n'
-  AND storyjob.plotwritartink = 'a'
+  AND plotwritartink = 'a'
   AND personcode <> '?';
 
 SELECT DISTINCT @dataset_id,

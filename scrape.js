@@ -29,10 +29,24 @@ const addUrlToDataset = (dgConnection, personcode, url, datasetId) => {
   return new Promise((resolve) => {
     magic.detectFile(filePath, async (err, result) => {
       if (/^image\//.test(result)) {
-        await dgConnection.query("insert ignore into dataset_entryurl(dataset_id, sitecode_url, personcode) VALUES(?, ?, ?)", [datasetId, url, personcode])
+        await dgConnection.query(
+          "insert ignore into dataset_entryurl(dataset_id, sitecode_url) VALUES(?, ?)",
+          [datasetId, url]
+        )
+        await dgConnection.query(
+          "insert ignore into entryurl_details(sitecode_url, personcode, decision) VALUES(?, ?, ?)",
+          [url, personcode, null]
+        )
       } else {
         console.log(`Marking ${filePath} as invalid`)
-        await dgConnection.query("insert ignore into entryurl_validation(sitecode_url, decision) VALUES(?, ?)", [url, 'no_drawing']);
+        await dgConnection.query(
+          "delete from dataset_entryurl where dataset_id = ? and sitecode_url = ?",
+          [datasetId, url]
+        )
+        await dgConnection.query(
+          "insert ignore into entryurl_details(sitecode_url, personcode, decision) VALUES(?, ?, ?)",
+          [url, personcode, 'no_drawing']
+        );
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath)
         }
@@ -45,7 +59,10 @@ const addUrlToDataset = (dgConnection, personcode, url, datasetId) => {
 const downloadAndAddUrlToDataset = (dgConnection, personcode, url, datasetId) => {
   return new Promise(async (resolve, reject) => {
     const filePath = `input/full/${url}`;
-    const isEntryurlInvalid = (await dgConnection.query("select decision from entryurl_validation where decision <> 'ok' and sitecode_url=?", [url])).length > 0;
+    const isEntryurlInvalid = (await dgConnection.query(
+      "select decision from entryurl_details where decision <> 'ok' and sitecode_url=?",
+      [url]
+    )).length > 0;
     if (isEntryurlInvalid) {
       console.log(`Skipped ${url} (marked as invalid)`)
       if (fs.existsSync(filePath)) {
