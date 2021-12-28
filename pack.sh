@@ -3,18 +3,19 @@
 subset=$1
 [ -z "$subset" ] && echo "Usage: $0 <subset>" && exit 1
 
-subsetDirectory="inducks-drawings-by-artist-$subset"
-[ ! -d "$subsetDirectory" ] && echo "$subsetDirectory does not exist" && exit 1
-
 cd input || exit 1
 
-archiveFileName="$subsetDirectory.zip"
+subsetDirectory="inducks-drawings-by-artist-$subset"
+drawingsZipFileName="$subsetDirectory.zip"
+rm -rf "$subsetDirectory" && mkdir -p "$subsetDirectory"
 
-drawingsDir="$subsetDirectory/drawings"
-drawingsCsv="$subsetDirectory-metadata/drawings.csv"
-drawingsPopularCsv="$subsetDirectory-metadata/drawings_popular.csv"
-artistsCsv="$subsetDirectory-metadata/artists.csv"
-artistsPopularCsv="$subsetDirectory-metadata/artists_popular.csv"
+subsetMetadataDirectory="inducks-drawings-by-artist-$subset-metadata"
+[ ! -d "$subsetMetadataDirectory" ] && echo "$subsetMetadataDirectory does not exist" && exit 1
+
+drawingsCsv="$subsetMetadataDirectory/drawings.csv"
+drawingsPopularCsv="$subsetMetadataDirectory/drawings_popular.csv"
+artistsCsv="$subsetMetadataDirectory/artists.csv"
+artistsPopularCsv="$subsetMetadataDirectory/artists_popular.csv"
 
 echo 'personcode,name,nationality,drawings' > "$artistsPopularCsv"
 tail -n +2 "$artistsCsv" | while IFS=',' read -r personcode _ _; do
@@ -30,7 +31,7 @@ echo 'url,personcode' > "$drawingsPopularCsv"
 i=0
 tail -n +2 "$drawingsCsv" | while IFS=',' read -r url personcode; do
   if grep -q "^$personcode," "$artistsPopularCsv"; then
-    artistDir="$drawingsDir/$personcode"
+    artistDir="$subsetDirectory/$personcode"
     mkdir -p "$artistDir"
     cp "$(echo $url | sed "s~^~full/~")" "$artistDir"/$i.jpg
     echo "$url,$personcode" >> "$drawingsPopularCsv"
@@ -38,6 +39,6 @@ tail -n +2 "$drawingsCsv" | while IFS=',' read -r url personcode; do
   fi
 done
 
-(cd "$subsetDirectory/drawings" && zip -rq "../$archiveFileName" .)
+(cd "$subsetDirectory" && zip -rq "../$drawingsZipFileName" .)
 
-(cd "$subsetDirectory-metadata" && zip "../${archiveFileName/.zip/-metadata.zip}" artists_popular.csv drawings_popular.csv)
+(cd "$subsetMetadataDirectory" && zip "../${drawingsZipFileName/.zip/-metadata.zip}" artists_popular.csv drawings_popular.csv)
