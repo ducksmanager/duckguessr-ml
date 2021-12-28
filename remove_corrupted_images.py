@@ -1,11 +1,11 @@
 import os
-import PIL
+from PIL import Image, UnidentifiedImageError
 from pathlib import Path
 
-path = Path("temp").rglob("**/*.jpg")
+path = Path("input/full").rglob("**/*.jpg")
 for img_p in path:
     try:
-        img = PIL.Image.open(img_p)
-    except PIL.UnidentifiedImageError:
+        img = Image.open(img_p)
+    except UnidentifiedImageError:
         print("Removing " + img_p.name)
         os.remove(img_p)

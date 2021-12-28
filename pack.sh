@@ -1,28 +1,43 @@
 #!/bin/bash
 
-[ -z "$1" ] && echo "Usage: $0 <subset>" && exit 1
-
 subset=$1
-fileName=datasets/inducks-drawings-by-artist-"$subset".zip
+[ -z "$subset" ] && echo "Usage: $0 <subset>" && exit 1
 
-sed -i 's/,nationality$/,nationality,drawings/' datasets/"$subset"/artists.csv
-tail -n +2 "$subset"/artists.csv | while read -r artist; do
-  personcode=$(echo "$artist" | cut -d',' -f1)
-  sed -i "s/^\($personcode,.\+\)\$/\1,$(grep -Pc "$personcode\$" datasets/"$subset"/drawings.csv)/g" datasets/"$subset"/artists.csv
+subsetDirectory="inducks-drawings-by-artist-$subset"
+[ ! -d "$subsetDirectory" ] && echo "$subsetDirectory does not exist" && exit 1
+
+cd input || exit 1
+
+archiveFileName="$subsetDirectory.zip"
+
+drawingsDir="$subsetDirectory/drawings"
+drawingsCsv="$subsetDirectory-metadata/drawings.csv"
+drawingsPopularCsv="$subsetDirectory-metadata/drawings_popular.csv"
+artistsCsv="$subsetDirectory-metadata/artists.csv"
+artistsPopularCsv="$subsetDirectory-metadata/artists_popular.csv"
+
+echo 'personcode,name,nationality,drawings' > "$artistsPopularCsv"
+tail -n +2 "$artistsCsv" | while IFS=',' read -r personcode _ _; do
+  drawingCount=$(grep -Pc "$personcode\$" "$drawingsCsv")
+  if [ $((drawingCount)) -ge 200 ]; then
+    echo "$(grep "^$personcode," "$artistsCsv"),$((drawingCount))" >> "$artistsPopularCsv"
+  fi
 done
 
-rm -f "$fileName"
-rm -rf temp && mkdir temp
+rm -rf -- *.zip
+echo 'url,personcode' > "$drawingsPopularCsv"
+
 i=0
-while IFS=',' read -r url personcode; do
-  mkdir -p temp/"$personcode"
-  cp "$(echo $url | sed "s~^~full/~g")" temp/"$personcode"/$i.jpg
-  ((i++))
-done < datasets/"$subset"/drawings.csv
+tail -n +2 "$drawingsCsv" | while IFS=',' read -r url personcode; do
+  if grep -q "^$personcode," "$artistsPopularCsv"; then
+    artistDir="$drawingsDir/$personcode"
+    mkdir -p "$artistDir"
+    cp "$(echo $url | sed "s~^~full/~")" "$artistDir"/$i.jpg
+    echo "$url,$personcode" >> "$drawingsPopularCsv"
+    ((i++))
+  fi
+done
 
-python remove_corrupted_images.py
+(cd "$subsetDirectory/drawings" && zip -rq "../$archiveFileName" .)
 
-(cd temp && zip -rq ../"$fileName" .)
-rm -rf temp
-
-(cd "$subset" && zip "../${fileName/.zip/-metadata.zip}" artists.csv drawings.csv)
+(cd "$subsetDirectory-metadata" && zip "../${archiveFileName/.zip/-metadata.zip}" artists_popular.csv drawings_popular.csv)
