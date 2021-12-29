@@ -2,7 +2,7 @@ import os
 from PIL import Image, UnidentifiedImageError
 from pathlib import Path
 
-path = Path("datasets/full").rglob("**/*.jpg")
+path = Path("datasets/full").rglob("**/*.*")
 for img_p in path:
     try:
         img = Image.open(img_p)

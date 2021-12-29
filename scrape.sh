@@ -7,24 +7,30 @@ subset=$1
 . .env
 
 cd datasets
-drawingsCsv="$subset"/drawings.csv
+drawingsCsv="$subset"/drawings_popular.csv
+artistsCsv="$subset"/artists_popular.csv
 
-echo "personcode,name,nationality" > "$subset"/artists.csv
+echo "personcode,name,nationality,drawings" > "$artistsCsv"
 echo "url,personcode" > "$drawingsCsv"
 
+imageRoot="https://inducks.org/hr.php?normalsize=1&image=https://outducks.org/"
+#imageRoot=https://res.cloudinary.com/dl7hskxab/image/upload/inducks-covers/
+
 mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P64000 -NB coa < ../query.sql | \
-  while read -r url personcode nationality name; do
+  while read -r personcode name nationality urls drawings; do
     personcode=${personcode/_/ }
     name=${name/_/ }
-    ! grep -qF "$name" "$subset"/artists.csv && echo "$personcode,$name,$nationality" >> "$subset"/artists.csv
-    ! grep -qF "$url" "$drawingsCsv" && echo "$url,$personcode" >> "$drawingsCsv"
-    ! [ -f full/"$url" ] \
-      && curl https://res.cloudinary.com/dl7hskxab/image/upload/inducks-covers/"$url" -s --create-dirs -o full/"$url" \
-      && echo "Downloaded $url" || echo "Skipped $url"
+    ! grep -qF "$name" "$artistsCsv" && echo "$personcode,$name,$nationality,$drawings" >> "$artistsCsv"
+    for url in $(echo "$urls" | tr "|" "\n"); do
+      ! grep -qF "$url" "$drawingsCsv" && echo "$url,$personcode" >> "$drawingsCsv"
+      ! [ -f full/"$url" ] \
+        && curl "$imageRoot/$url" -s --create-dirs -o full/"$url" \
+        && echo "Downloaded $url" || echo "Skipped $url"
+    done
 done
 
 echo "Removing corrupted images..."
-python ../remove_corrupted_images.py
+(cd .. && python remove_corrupted_images.py)
 
 tail -n +2 "$drawingsCsv" | while IFS=',' read -r url _; do
   if [ ! -f "$(echo $url | sed "s~^~full/~")" ]; then
