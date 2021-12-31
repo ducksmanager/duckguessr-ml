@@ -1,3 +1,5 @@
 .env
 datasets
 *.keras
+/.idea/
+/node_modules/
