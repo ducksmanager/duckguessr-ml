@@ -1,5 +1,7 @@
 .env
-datasets
+input/full
+input/*.zip
+input/**/*.csv
 *.keras
 /.idea/
 /node_modules/

@@ -7,5 +7,5 @@ for img_p in path:
     try:
         img = Image.open(img_p)
     except UnidentifiedImageError:
-        print("Removing " + img_p.name)
+        print("Removing " + str(img_p))
         os.remove(img_p)
