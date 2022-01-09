@@ -1,43 +1,40 @@
-create or replace view duckguessr_published_fr_recent as
-select distinct entryurl.id as entryurl_id,
+CREATE OR REPLACE VIEW duckguessr_published_fr_recent AS
+SELECT DISTINCT entryurl.id AS entryurl_id,
                 storyjob.personcode
-from (
+FROM (
          SELECT id, entrycode
          FROM inducks_entryurl
          WHERE sitecode = 'thumbnails3'
-     ) as entryurl
-         inner join inducks_entry entry on entry.entrycode = entryurl.entrycode
-         inner join inducks_storyversion storyversion
-                    on entry.storyversioncode = storyversion.storyversioncode
-         inner join inducks_story story on storyversion.storycode = story.storycode
-         inner join inducks_storyjob storyjob on storyversion.storyversioncode = storyjob.storyversioncode
-         inner join (
-    select personcode
-    from inducks_issue issue
-             inner join inducks_entry entry on issue.issuecode = entry.issuecode
-             inner join inducks_entryurl entryurl on entry.entrycode = entryurl.entrycode
-             inner join inducks_storyversion storyversion
-                        on entry.storyversioncode = storyversion.storyversioncode
-             inner join inducks_story story on storyversion.storycode = story.storycode
-             inner join inducks_storyjob storyjob on storyversion.storyversioncode = storyjob.storyversioncode
-    where issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG')
-      and oldestdate > '2010-00-00'
-      and sitecode = 'thumbnails3'
-      and kind = 'n'
-      and storyjob.plotwritartink = 'a'
-      and personcode <> '?'
-    group by personcode
-    having count(entryurl.id) > 20
-) as artists_published_in_recent_fr_issues on storyjob.personcode = artists_published_in_recent_fr_issues.personcode
-where storyjob.plotwritartink = 'a';
+     ) AS entryurl
+         INNER JOIN inducks_entry entry ON entry.entrycode = entryurl.entrycode
+         INNER JOIN inducks_storyversion storyversion
+                    ON entry.storyversioncode = storyversion.storyversioncode
+         INNER JOIN inducks_story story ON storyversion.storycode = story.storycode
+         INNER JOIN inducks_storyjob storyjob ON storyversion.storyversioncode = storyjob.storyversioncode
+         INNER JOIN (
+    SELECT personcode
+    FROM inducks_issue issue
+             INNER JOIN inducks_entry entry ON issue.issuecode = entry.issuecode
+             INNER JOIN inducks_entryurl entryurl ON entry.entrycode = entryurl.entrycode
+             INNER JOIN inducks_storyversion storyversion
+                        ON entry.storyversioncode = storyversion.storyversioncode
+             INNER JOIN inducks_story story ON storyversion.storycode = story.storycode
+             INNER JOIN inducks_storyjob storyjob ON storyversion.storyversioncode = storyjob.storyversioncode
+    WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG')
+      AND oldestdate > '2010-00-00'
+      AND sitecode = 'thumbnails3'
+      AND kind = 'n'
+      AND storyjob.plotwritartink = 'a'
+      AND personcode <> '?'
+    GROUP BY personcode
+    HAVING COUNT(entryurl.id) > 20
+) AS artists_published_in_recent_fr_issues ON storyjob.personcode = artists_published_in_recent_fr_issues.personcode
+WHERE storyjob.plotwritartink = 'a';
 
-select replace(person.personcode, ' ', '_')                                                       as personcode,
-       replace(person.fullname, ' ', '_')                                                         as fullname,
-       person.nationalitycountrycode                                                              as nationalitycountrycode,
-       group_concat(concat(sitecode, '/', url) order by entryurl.id desc separator '|' limit 500) as entryurl_urls,
-       least(500, count(*))                                                                       as drawings
-from duckguessr_published_fr_recent
-         inner join inducks_person person on duckguessr_published_fr_recent.personcode = person.personcode
-         inner join inducks_entryurl entryurl on duckguessr_published_fr_recent.entryurl_id = entryurl.id
-group by duckguessr_published_fr_recent.personcode
-having count(*) >= 200;
+SELECT REPLACE(person.personcode, ' ', '_')                                                       AS personcode,
+       GROUP_CONCAT(CONCAT(sitecode, '/', url) ORDER BY entryurl.id DESC SEPARATOR '|' LIMIT 500) AS entryurl_urls
+FROM duckguessr_published_fr_recent
+         INNER JOIN inducks_person person ON duckguessr_published_fr_recent.personcode = person.personcode
+         INNER JOIN inducks_entryurl entryurl ON duckguessr_published_fr_recent.entryurl_id = entryurl.id
+GROUP BY duckguessr_published_fr_recent.personcode
+HAVING COUNT(*) >= 200;
