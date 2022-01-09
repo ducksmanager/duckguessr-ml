@@ -22,33 +22,46 @@ mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P64000 -NB coa < "$subset/query.s
     name=${name/_/ }
     ! grep -qF "$name" "$artistsCsv" && echo "$personcode,$name,$nationality,$drawings" >> "$artistsCsv"
     for url in $(echo "$urls" | tr "|" "\n"); do
-      result=$(mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P64000 -NB coa -e \
-        "select 1 from entryurl_validations where decision=1 and sitecode_url='$url'") \
-      && [ '1' == "$result" ] \
-      && echo "Skipped $url" \
+      result=$(mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P33061 -NB duckguessr -e \
+        "select decision from entryurl_validations where decision <> 'ok' and sitecode_url='$url'") \
+      && [ 'ok' != "$result" ] && [ '' != "$result" ] \
+      && echo "Skipped $url (marked as invalid)" \
       && rm -f "full/$url" \
       && continue
 
-      ! [ -f full/"$url" ] \
-        && curl "$imageRoot/$url" -s --create-dirs -o full/"$url" \
+      if [ -f full/"$url" ]; then
+        echo "Skipped $url (already downloaded)"
+      else
+        curl "$imageRoot/$url" -s --create-dirs -o full/"$url" \
         && echo "Downloaded $url" \
-        || echo "Skipped $url" \
-        && ! grep -qF "$url" "$drawingsCsv" \
-        && echo "$url,$personcode" >> "$drawingsCsv"
+        || echo "Skipped $url (could not download)"
+      fi
+      ! grep -qF "$url" "$drawingsCsv" \
+      && echo "$url,$personcode" >> "$drawingsCsv"
     done
 done
 
 echo "Removing corrupted images..."
 (cd .. && python remove_corrupted_images.py \
   | grep -Po '(?<=Removing input/full/).+' \
-  | while read -r removedImage; do \
-    mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P64000 -NB coa -e \
-      "insert into entryurl_validations(sitecode_url, decision) VALUES('$removedImage', 1)"; \
+  | while read -r removedImage; do
+    echo "Marking $removedImage as invalid"
+    mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P33061 -NB duckguessr -e \
+      "insert ignore into entryurl_validations(sitecode_url, decision) VALUES('$removedImage', 'no_drawing')"
     done
 )
 
-tail -n +2 "$drawingsCsv" | while IFS=',' read -r url _; do
-  if [ ! -f "full/$url" ]; then
+dataset_id=$(mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P33061 -NB duckguessr -e \
+  "select id from datasets where name='$subset-ml'")
+
+mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P33061 -NB duckguessr -e \
+  "delete from datasets_entryurls where dataset_id=$dataset_id"
+
+tail -n +2 "$drawingsCsv" | while IFS=',' read -r url personcode; do
+  if [ -f "full/$url" ]; then
+    mysql -uroot -h 127.0.0.1 -p"$MYSQL_PASSWORD" -P33061 -NB duckguessr -e \
+      "insert into datasets_entryurls(dataset_id, sitecode_url, personcode) VALUES($dataset_id, '$url', '$personcode')"
+  else
     grep -vF "$url" "$drawingsCsv" > "${drawingsCsv}2"
     mv "${drawingsCsv}2" "$drawingsCsv"
   fi
