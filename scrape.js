@@ -10,26 +10,21 @@ if (!args[0]) {
   console.error("Usage: $0 <subset>")
   process.exit(1)
 }
-const [datasetName] = args
+const [baseDatasetName] = args
 
-const sqlQueryPath = `input/${datasetName}/query.sql`;
-if (!fs.existsSync(sqlQueryPath)) {
-  console.error(`${sqlQueryPath} does not exist`)
-  process.exit(1)
-}
-const sqlMlQueryPath = sqlQueryPath.replace(/\.sql$/, '-ml.sql');
-if (!fs.existsSync(sqlMlQueryPath)) {
-  console.error(`${sqlMlQueryPath} does not exist`)
-  process.exit(1)
+for (const datasetSuffix of ['', '-ml']) {
+  const sqlQueryPath = `input/${baseDatasetName}/query${datasetSuffix}.sql`;
+  if (!fs.existsSync(sqlQueryPath)) {
+    console.error(`${sqlQueryPath} does not exist`)
+    process.exit(1)
+  }
 }
 
 // const imageRoot="https://inducks.org/hr.php?normalsize=1&image=https://outducks.org/"
 const imageRoot = 'https://res.cloudinary.com/dl7hskxab/image/upload/inducks-covers/'
 
 
-let datasetId
-
-const addUrlToDataset = (dgConnection, personcode, url) => {
+const addUrlToDataset = (dgConnection, personcode, url, datasetId) => {
   const filePath = `input/full/${url}`;
   return new Promise((resolve) => {
     magic.detectFile(filePath, async (err, result) => {
@@ -38,14 +33,16 @@ const addUrlToDataset = (dgConnection, personcode, url) => {
       } else {
         console.log(`Marking ${filePath} as invalid`)
         await dgConnection.query("insert ignore into entryurl_validations(sitecode_url, decision) VALUES(?, ?)", [url, 'no_drawing']);
-        fs.unlinkSync(filePath)
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
       }
       resolve('OK')
     })
   })
 }
 
-const downloadAndAddUrlToDataset = (dgConnection, personcode, url) => {
+const downloadAndAddUrlToDataset = (dgConnection, personcode, url, datasetId) => {
   return new Promise(async (resolve, reject) => {
     const filePath = `input/full/${url}`;
     const isEntryurlInvalid = (await dgConnection.query("select decision from entryurl_validations where decision <> 'ok' and sitecode_url=?", [url])).length > 0;
@@ -58,7 +55,7 @@ const downloadAndAddUrlToDataset = (dgConnection, personcode, url) => {
       return
     }
     if (fs.existsSync(filePath)) {
-      addUrlToDataset(dgConnection, personcode, url).then(() => {
+      addUrlToDataset(dgConnection, personcode, url, datasetId).then(() => {
         console.log(`Skipped ${url} (already downloaded)`)
         resolve('OK');
       });
@@ -68,7 +65,7 @@ const downloadAndAddUrlToDataset = (dgConnection, personcode, url) => {
       const file = fs.createWriteStream(filePath);
       await https.get(`${imageRoot}/${url}`, async response => {
         response.pipe(file);
-        addUrlToDataset(dgConnection, personcode, url).then(() => {
+        addUrlToDataset(dgConnection, personcode, url, datasetId).then(() => {
           console.log(`Downloaded ${url}`)
         })
         resolve('OK');
@@ -79,13 +76,13 @@ const downloadAndAddUrlToDataset = (dgConnection, personcode, url) => {
   })
 }
 
-const downloadDatasetFromQuery = (coaConnection, dgConnection) => {
+const downloadDatasetFromQuery = (coaConnection, dgConnection, datasetSuffix, datasetId) => {
   return new Promise(async (resolve) => {
-    const [, data] = await coaConnection.query(fs.readFileSync(sqlMlQueryPath).toString());
+    const [, data] = await coaConnection.query(fs.readFileSync(`input/${baseDatasetName}/query${datasetSuffix}.sql`).toString());
     for (const {personcode, entryurl_urls} of data) {
       const urls = entryurl_urls.split('|')
       for (const url of urls) {
-        await downloadAndAddUrlToDataset(dgConnection, personcode, url)
+        await downloadAndAddUrlToDataset(dgConnection, personcode, url, datasetId)
       }
     }
     resolve('OK')
@@ -94,10 +91,11 @@ const downloadDatasetFromQuery = (coaConnection, dgConnection) => {
 
 const scrape = async () => {
   const {coaConnection, dgConnection} = await connect()
-  const [dataset] = await dgConnection.query("select id from datasets where name=?", [`${datasetName}-ml`])
-  datasetId = dataset.id
-  await dgConnection.query("delete from datasets_entryurls where dataset_id=?", [datasetId])
-  await downloadDatasetFromQuery(coaConnection, dgConnection);
+  for (const datasetSuffix of ['', '-ml']) {
+    const [dataset] = await dgConnection.query("select id from datasets where name=?", [`${baseDatasetName}${datasetSuffix}`])
+    await dgConnection.query("delete from datasets_entryurls where dataset_id=?", [dataset.id])
+    await downloadDatasetFromQuery(coaConnection, dgConnection, datasetSuffix, dataset.id);
+  }
   await coaConnection.end();
   await dgConnection.end();
   process.exit(0)
