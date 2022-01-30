@@ -49,7 +49,7 @@ const pack = () => {
   return new Promise(async (resolve) => {
     let i = 0
     const {coaConnection, dgConnection} = await connect()
-    const [dataset] = await dgConnection.query("select id from datasets where name=?", [`${datasetName}-ml`])
+    const [dataset] = await dgConnection.query("select id from dataset where name=?", [`${datasetName}-ml`])
     const datasetId = dataset.id
     const entryUrls = await dgConnection.query("select sitecode_url AS url, personcode from datasets_entryurls where dataset_id=?", [datasetId])
     console.log('Copying image files...')
@@ -66,7 +66,7 @@ const pack = () => {
     const drawingsByArtist = (await dgConnection.query(`
         select REPLACE(personcode, ' ', '_') as personcode,
                COUNT(*)                      as drawings
-        from datasets_entryurls
+        from dataset_entryurl
         where dataset_id = ?
         group by personcode
     `, [datasetId])).reduce((acc, {personcode, drawings}) => ({
