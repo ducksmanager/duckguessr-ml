@@ -2,19 +2,19 @@ require('dotenv').config()
 const mariadb = require("mariadb");
 
 const dgPool = mariadb.createPool({
-  host: '127.0.0.1',
+  host: process.env.MYSQL_HOST_DG,
   user: 'root',
   database: 'duckguessr',
   password: process.env.MYSQL_PASSWORD,
-  port: 33061,
+  port: process.env.MYSQL_PORT_DG,
   connectionLimit: 5
 });
 const coaPool = mariadb.createPool({
-  host: '127.0.0.1',
+  host: process.env.MYSQL_HOST_COA,
   user: 'root',
   database: 'coa',
   password: process.env.MYSQL_PASSWORD,
-  port: 64000,
+  port: process.env.MYSQL_PORT_COA,
   connectionLimit: 5,
   multipleStatements: true
 });
