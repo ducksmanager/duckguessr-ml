@@ -29,9 +29,6 @@ const addUrlToDataset = (dgConnection, personcode, url, datasetId) => {
   const filePath = `${filePathRoot}${url}`;
   return new Promise((resolve, reject) => {
     magic.detectFile(filePath, async (err, result) => {
-      if (url === 'thumbnails3/webusers/2018/05/fr_mp_0345p174_001.jpg') {
-        debugger
-      }
       if (/^image\//.test(result)) {
         await dgConnection.query(
           "insert ignore into dataset_entryurl(dataset_id, sitecode_url) VALUES(?, ?)",
@@ -97,15 +94,18 @@ const downloadAndAddUrlToDataset = (dgConnection, personcode, url, datasetId) =>
       const file = fs.createWriteStream(filePath);
       await https.get(`${imageRoot}/${url}`, async response => {
         response.pipe(file);
-        addUrlToDataset(dgConnection, personcode, url, datasetId)
-          .then(() => {
-            console.log(`Downloaded ${url}`)
-          })
-          .catch(() => {
-          })
-          .finally(() => {
-            resolve('OK');
-          })
+        response.on('end', () => {
+          addUrlToDataset(dgConnection, personcode, url, datasetId)
+            .then(() => {
+              console.log(`Downloaded ${url}`)
+            })
+            .catch(() => {
+              console.log(`Could not download ${url}`)
+            })
+            .finally(() => {
+              resolve('OK');
+            })
+        });
       }).on('error', () => {
         reject(`Skipped ${url} (could not download)`)
       });
