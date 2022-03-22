@@ -16,7 +16,7 @@ WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG')
   AND personcode <> '?';
 
 CREATE OR REPLACE VIEW duckguessr_published_fr_recent_game AS
-SELECT storyjob.personcode,
+SELECT DISTINCT storyjob.personcode,
        sitecode,
        url,
        entryurl_id
