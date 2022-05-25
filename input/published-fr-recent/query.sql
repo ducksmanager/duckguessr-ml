@@ -8,8 +8,8 @@ FROM inducks_issue issue
                 ON entry.storyversioncode = storyversion.storyversioncode
      INNER JOIN inducks_story story ON storyversion.storycode = story.storycode
      INNER JOIN inducks_storyjob storyjob ON storyversion.storyversioncode = storyjob.storyversioncode
-WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG')
-  AND oldestdate > '2010-00-00'
+WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG', 'fr/JM')
+  AND oldestdate >= '2001'
   AND sitecode = 'thumbnails3'
   AND kind = 'n'
   AND plotwritartink = 'a'
