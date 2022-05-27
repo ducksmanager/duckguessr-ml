@@ -87,6 +87,8 @@ const downloadAndAddUrlToDataset = (dgConnection, personcode, url, datasetId) =>
       addUrlToDataset(dgConnection, personcode, url, datasetId).then(() => {
         console.log(`Skipped ${url} (already downloaded)`)
         resolve('OK');
+      }).catch(() => {
+        resolve('Ignored')
       });
     } else {
       fs.mkdirSync(filePath, {recursive: true})
