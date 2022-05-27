@@ -1,0 +1,28 @@
+version: '3.7'
+services:
+  scrape:
+    image: node:16
+    working_dir: /app
+    volumes:
+      - .:/app
+    networks:
+      dm-server_db-network:
+      duckguessr_duckguessr-network:
+    command: 'sh -c "[ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 || npm install && node scrape.js \"$$DATASET\""'
+
+  pack:
+    image: node:16
+    working_dir: /app
+    volumes:
+      - .:/app
+    networks:
+      dm-server_db-network:
+      duckguessr_duckguessr-network:
+    command: 'sh -c "[ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 || npm install && node pack.js \"$$DATASET\""'
+
+
+networks:
+  dm-server_db-network:
+    external: true
+  duckguessr_duckguessr-network:
+    external: true

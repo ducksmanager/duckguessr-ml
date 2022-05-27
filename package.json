@@ -6,7 +6,7 @@
     "csv-reader": "^1.0.8",
     "csv-writer": "^1.6.0",
     "dotenv": "^10.0.0",
-    "mariadb": "^2.5.5",
+    "mariadb": "^3.0.0",
     "mmmagic": "^0.5.3"
   }
 }
