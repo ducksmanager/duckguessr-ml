@@ -7,7 +7,8 @@ const dgPool = mariadb.createPool({
   database: 'duckguessr',
   password: process.env.MYSQL_PASSWORD,
   port: process.env.MYSQL_PORT_DG,
-  connectionLimit: 5
+  connectionLimit: 5,
+  initSql: 'set @@wait_timeout = 1800'
 });
 const coaPool = mariadb.createPool({
   host: process.env.MYSQL_HOST_COA,
@@ -16,7 +17,8 @@ const coaPool = mariadb.createPool({
   password: process.env.MYSQL_PASSWORD,
   port: process.env.MYSQL_PORT_COA,
   connectionLimit: 5,
-  multipleStatements: true
+  multipleStatements: true,
+  initSql: 'set @@wait_timeout = 1800'
 });
 
 
