@@ -16,7 +16,7 @@ WHERE storyjob.plotwritartink = 'a'
   AND sitecode = 'thumbnails3';
 
 SELECT REPLACE(personcode, ' ', '_')                   AS personcode,
-       GROUP_CONCAT(CONCAT(sitecode, '/', url) SEPARATOR '|') AS entryurl_urls
+       GROUP_CONCAT(CONCAT(sitecode, '/', url) SEPARATOR '|' LIMIT 500) AS entryurl_urls
 FROM duckguessr_us
 GROUP BY duckguessr_us.personcode
-HAVING COUNT(*) >= 200
+HAVING COUNT(*) >= 200;

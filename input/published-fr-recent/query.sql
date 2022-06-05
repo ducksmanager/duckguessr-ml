@@ -38,7 +38,7 @@ CREATE OR REPLACE VIEW duckguessr_published_fr_recent_artists AS
 SELECT DISTINCT personcode FROM duckguessr_published_fr_recent_game;
 
 SELECT personcode,
-       GROUP_CONCAT(DISTINCT CONCAT(sitecode, '/', url) ORDER BY entryurl_id DESC SEPARATOR '|') AS entryurl_urls
+       GROUP_CONCAT(DISTINCT CONCAT(sitecode, '/', url) ORDER BY entryurl_id DESC SEPARATOR '|' LIMIT 500) AS entryurl_urls
 FROM duckguessr_published_fr_recent_game
 GROUP BY personcode;
 
