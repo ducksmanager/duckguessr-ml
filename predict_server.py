@@ -35,7 +35,7 @@ def predict():
     request_data = request.get_json()
     url = request_data["url"]
 
-    if request_data["dataset"] != 'published-fr-recent':
+    if request_data["dataset"] == dataset or request_data["dataset"] == "published-fr-small":
         return Response('Invalid dataset', 400)
 
     url = f"{cloudinary_root}{url}"
