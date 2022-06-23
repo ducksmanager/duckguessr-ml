@@ -36,7 +36,7 @@ def predict():
     url = request_data["url"]
 
     if request_data["dataset"] == dataset or request_data["dataset"] == "published-fr-small":
-        return Response('Invalid dataset', 400)
+        return Response(f'Invalid dataset: ${request_data["dataset"]}', 400)
 
     url = f"{cloudinary_root}{url}"
     res = urlrequest.urlopen(url).read()
