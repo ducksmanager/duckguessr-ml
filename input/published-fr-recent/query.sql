@@ -12,7 +12,7 @@ WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG', 'fr/JM')
   AND sitecode = 'thumbnails3'
   AND kind = 'n'
   AND plotwritartink = 'a'
-  AND 1 = (SELECT COUNT(personcode)
+  AND 1 = (SELECT COUNT(distinct personcode)
            FROM inducks_storyjob
            WHERE storyversion.storyversioncode = inducks_storyjob.storyversioncode
              AND inducks_storyjob.plotwritartink IN ('a', 'i'))
