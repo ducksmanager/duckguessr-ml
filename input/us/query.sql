@@ -7,10 +7,13 @@ FROM inducks_entryurl entryurl
 INNER JOIN inducks_entry entry ON entry.entrycode = entryurl.entrycode
 INNER JOIN inducks_storyversion storyversion
         ON entry.storyversioncode = storyversion.storyversioncode
-INNER JOIN inducks_story story ON storyversion.storycode = story.storycode
 INNER JOIN inducks_storyjob storyjob ON storyversion.storyversioncode = storyjob.storyversioncode
 INNER JOIN inducks_person person ON storyjob.personcode = person.personcode
 WHERE storyjob.plotwritartink = 'a'
+  AND 1 = (SELECT COUNT(personcode)
+           FROM inducks_storyjob
+           WHERE storyversion.storyversioncode = inducks_storyjob.storyversioncode
+             AND inducks_storyjob.plotwritartink IN ('a', 'i'))
   AND person.personcode <> '?'
   AND person.nationalitycountrycode = 'us'
   AND sitecode = 'thumbnails3';

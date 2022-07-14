@@ -6,13 +6,16 @@ FROM inducks_issue issue
      INNER JOIN inducks_entryurl entryurl ON entry.entrycode = entryurl.entrycode
      INNER JOIN inducks_storyversion storyversion
                 ON entry.storyversioncode = storyversion.storyversioncode
-     INNER JOIN inducks_story story ON storyversion.storycode = story.storycode
      INNER JOIN inducks_storyjob storyjob ON storyversion.storyversioncode = storyjob.storyversioncode
 WHERE issue.publicationcode IN ('fr/MP', 'fr/PM', 'fr/SPG', 'fr/JM')
   AND oldestdate >= '2001'
   AND sitecode = 'thumbnails3'
   AND kind = 'n'
   AND plotwritartink = 'a'
+  AND 1 = (SELECT COUNT(personcode)
+           FROM inducks_storyjob
+           WHERE storyversion.storyversioncode = inducks_storyjob.storyversioncode
+             AND inducks_storyjob.plotwritartink IN ('a', 'i'))
   AND personcode <> '?';
 
 CREATE OR REPLACE VIEW duckguessr_published_fr_recent_small_game AS

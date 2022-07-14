@@ -13,5 +13,9 @@ INNER JOIN inducks_entry entry ON entry.storyversioncode = storyversion.storyver
 INNER JOIN inducks_entryurl entryurl ON entry.entrycode = entryurl.entrycode
 WHERE sitecode = 'thumbnails3'
   AND plotwritartink = 'a'
+  AND 1 = (SELECT COUNT(personcode)
+           FROM inducks_storyjob
+           WHERE storyversion.storyversioncode = inducks_storyjob.storyversioncode
+             AND inducks_storyjob.plotwritartink IN ('a', 'i'))
   AND kind = 'n'
 GROUP BY game_artist.personcode;
