@@ -20,6 +20,21 @@ services:
       duckguessr_duckguessr-network:
     command: 'sh -c "[ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 || npm install && npm rebuild mmmagic && node pack.js \"$$DATASET\""'
 
+  download-model:
+    image: python:3.8
+    working_dir: /app
+    environment:
+      PATH: '/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin'
+    volumes:
+      - ./input:/app/input
+    command: >
+      sh -c "
+        [ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 \
+        || pip install --user kaggle \
+        && kaggle kernels output $$KAGGLE_USERNAME/predict-duck-artist-$$DATASET -p input/$$DATASET \
+        && kaggle datasets download --unzip $$KAGGLE_USERNAME/inducks-drawings-by-artist-$$DATASET-md -p input/$$DATASET \
+      "
+
   predict-server:
     image: python:3.8
     working_dir: /app
