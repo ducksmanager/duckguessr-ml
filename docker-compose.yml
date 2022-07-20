@@ -7,7 +7,7 @@ services:
       - .:/app
     networks:
       dm-server_db-network:
-      duckguessr_duckguessr-network:
+      duckguessr-network:
     command: 'sh -c "[ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 || npm install && npm rebuild mmmagic && node scrape.js \"$$DATASET\""'
 
   pack:
@@ -17,7 +17,7 @@ services:
       - .:/app
     networks:
       dm-server_db-network:
-      duckguessr_duckguessr-network:
+      duckguessr-network:
     command: 'sh -c "[ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 || npm install && npm rebuild mmmagic && node pack.js \"$$DATASET\""'
 
   download-model:
@@ -52,5 +52,5 @@ networks:
     external: true
   dm-server_db-network:
     external: true
-  duckguessr_duckguessr-network:
+  duckguessr-network:
     external: true
