@@ -11,17 +11,11 @@ import numpy as np
 import pandas as pd
 import time
 
-dataset = 'published-fr-recent'
-
-images_dir = f'input/{dataset}/dataset'
-artists = pd.read_csv(f'input/{dataset}/artists_popular.csv')
-artists_top = artists[artists['drawings'] >= 200]
-artists_top_name = artists_top['personcode'].values
-model = keras.models.load_model(f'{dataset}.keras')
+cloudinary_root = 'https://res.cloudinary.com/dl7hskxab/image/upload/v1623338718/inducks-covers/'
+datasets = ['published-fr-recent']
+models = {dataset: keras.models.load_model(f'input/{dataset}/model.keras') for dataset in datasets}
 
 app = Flask(__name__)
-
-cloudinary_root = 'https://res.cloudinary.com/dl7hskxab/image/upload/v1623338718/inducks-covers/'
 
 
 @app.route('/', methods=['GET'])
@@ -35,9 +29,12 @@ def predict():
     request_data = request.get_json()
     url = request_data["url"]
 
-    if request_data["dataset"] != dataset and request_data["dataset"] != "published-fr-small":
+    if not request_data["dataset"] in datasets:
         return Response(f'Invalid dataset: {request_data["dataset"]}', 400)
 
+    artists = pd.read_csv(f'input/{request_data["dataset"]}/artists_popular.csv')
+    artists_top = artists[artists['drawings'] >= 200]
+    artists_top_name = artists_top['personcode'].values
     url = f"{cloudinary_root}{url}"
     res = urlrequest.urlopen(url).read()
 
@@ -48,7 +45,7 @@ def predict():
     test_image /= 255.
     test_image = np.expand_dims(test_image, axis=0)
 
-    prediction = model.predict(test_image)
+    prediction = models[request_data["dataset"]].predict(test_image)
     prediction_probability = np.amax(prediction)
     prediction_idx = np.argmax(prediction)
     if prediction_idx >= len(artists_top_name):

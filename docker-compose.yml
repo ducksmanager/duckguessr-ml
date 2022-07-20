@@ -20,8 +20,21 @@ services:
       duckguessr_duckguessr-network:
     command: 'sh -c "[ -z \"$$DATASET\" ] && echo \"No dataset provided\" && exit 1 || npm install && npm rebuild mmmagic && node pack.js \"$$DATASET\""'
 
+  predict-server:
+    image: python:3.8
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    restart: always
+    networks:
+      - public-network
+    command: 'sh -c "pip install -r requirements.txt && python3 predict_server.py"'
 
 networks:
+  public-network:
+    external: true
   dm-server_db-network:
     external: true
   duckguessr_duckguessr-network:
