@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "target": "es2018",
+    "lib": ["DOM", "ESNext"],
+    "strict": true,
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist"
+  },
+  "paths": {
+    "~duckguessr/*": ["../applications/duckguessr-vue-3/*"],
+    "~prisma-clients/*": ["../prisma-clients/*"],
+  },
+  "exclude": ["node_modules"]
+}
