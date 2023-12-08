@@ -1,7 +1,7 @@
 import archiver from "archiver";
 import { createObjectCsvWriter } from "csv-writer";
 import { existsSync, mkdirSync, rmdirSync, unlinkSync, copyFileSync, createWriteStream } from "fs";
-import { PrismaClient } from "~duckguessr";
+import { PrismaClient } from "~duckguessr/api/prisma/client_duckguessr";
 import { PrismaClient as PrismaCoaClient } from "~prisma-clients/client_coa";
 
 const args = process.argv.slice(2);

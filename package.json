@@ -9,13 +9,14 @@
     "csv-reader": "^1.0.8",
     "csv-writer": "^1.6.0",
     "dotenv": "^10.0.0",
+    "file-type": "^18.7.0",
     "mariadb": "^3.0.0",
-    "mmmagic": "^0.5.3",
     "~duckguessr": "workspace:*",
     "~prisma-clients": "workspace:*"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",
-    "@types/mmmagic": "^0.4.33"
+    "prettier": "^3.1.0",
+    "tsx": "^4.6.2"
   }
 }

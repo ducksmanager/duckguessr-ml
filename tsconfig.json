@@ -17,7 +17,7 @@
     "outDir": "dist"
   },
   "paths": {
-    "~duckguessr/*": ["../applications/duckguessr-vue-3/*"],
+    "~duckguessr/*": ["../../apps/duckguessr/*"],
     "~prisma-clients/*": ["../prisma-clients/*"],
   },
   "exclude": ["node_modules"]
