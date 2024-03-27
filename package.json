@@ -2,11 +2,11 @@
   "name": "dg-ml",
   "version": "1.0.0",
   "dependencies": {
-    "archiver": "^5.3.0",
-    "csv-reader": "^1.0.8",
+    "archiver": "^5.3.2",
+    "csv-reader": "^1.0.12",
     "csv-writer": "^1.6.0",
     "dotenv": "^10.0.0",
-    "mariadb": "^3.0.0",
+    "mariadb": "^3.3.0",
     "mmmagic": "^0.5.3"
   }
 }
