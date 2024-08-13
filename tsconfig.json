@@ -3,7 +3,10 @@
     "baseUrl": ".",
     "module": "ESNext",
     "target": "es2018",
-    "lib": ["DOM", "ESNext"],
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
     "strict": true,
     "jsx": "preserve",
     "esModuleInterop": true,
@@ -17,8 +20,14 @@
     "outDir": "dist"
   },
   "paths": {
-    "~duckguessr/*": ["../../apps/duckguessr/*"],
-    "~prisma-clients/*": ["../prisma-clients/*"],
+    "~duckguessr/*": [
+      "../../apps/duckguessr/*"
+    ],
+    "~prisma-schemas/*": [
+      "../prisma-schemas/*"
+    ],
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

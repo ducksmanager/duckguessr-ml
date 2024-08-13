@@ -7,7 +7,7 @@ import {
   createWriteStream,
 } from "fs";
 import { fileTypeFromFile } from "file-type";
-import { PrismaClient as PrismaCoaClient } from "~prisma-clients/client_coa";
+import { PrismaClient as PrismaCoaClient } from "~prisma-schemas/schemas/coa";
 import { PrismaClient } from "~duckguessr/api/prisma/client_duckguessr";
 
 import { connect } from "http2";
